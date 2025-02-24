@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Character Select Randomizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Main container for the overlay -->
+  <div id="overlay-container">
+    <img id="randomizer-image" src="" alt="Randomizer">
+  </div>
+
+  <!-- Toggle button to show/hide configuration panel -->
+  <button id="toggle-config" title="Configure Randomizer">⚙️</button>
+
+  <!-- Hidden configuration panel -->
+  <div id="config-panel" class="hidden">
+    <h3>Settings</h3>
+    <label for="game-select">Select Game:</label>
+    <select id="game-select">
+      <option value="GameA">Valorant</option>
+      <option value="GameB">Marvel Rivals</option>
+      <option value="custom">Custom</option>
+    </select>
+    
+    <label for="duration">Animation Duration (sec):</label>
+    <input type="number" id="duration" value="5" min="1">
+    
+    <label for="animation">Animation Type:</label>
+    <select id="animation">
+      <option value="fade">Fade</option>
+      <option value="slide">Slide</option>
+      <option value="slide">None</option>
+    </select>
+    
+    <!-- Custom images input field (shown only when "Custom Images" is selected) -->
+    <div id="custom-images-section" class="hidden">
+      <label for="custom-images">Image URLs (comma-separated):</label>
+      <input type="text" id="custom-images" placeholder="https://example.com/image1.png, ...">
+    </div>
+    
+    <button id="apply-settings">Apply Settings</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
