@@ -1,56 +1,70 @@
-/* style.css */
-
-/* Container styling */
-#overlay-container {
+/* Container for the overlay */
+.main-container {
+    width: 1920px;
+    height: 1080px;
     position: relative;
-    width: 800px;
-    height: 600px;
-    margin: auto;
     overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 400ms ease; /* Container fade-in/out transition */
   }
   
-  /* Image display settings */
+  /* Style for the image element */
   #randomizer-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    opacity: 0;
+    object-fit: contain;
     transition: opacity 1s ease-in-out;
   }
   
-  /* Animation classes */
+  /* Fade-in animation */
   .fade-in {
     opacity: 1;
+    transition: opacity 500ms ease-in-out;
   }
+  
+  /* Slide-in animation */
   .slide-in {
     transform: translateX(-100%);
-    animation: slideIn 1s forwards;
+    animation: slideIn 500ms forwards;
   }
   @keyframes slideIn {
     to { transform: translateX(0); }
   }
   
-  /* Toggle button styling */
-  #toggle-config {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
+  /* Flip Animation */
+  @keyframes flipAnimation {
+    from { transform: perspective(400px) rotateY(0deg); }
+    to { transform: perspective(400px) rotateY(360deg); }
+  }
+  .flip {
+    animation: flipAnimation 500ms forwards;
   }
   
-  /* Configuration panel styling */
-  #config-panel {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background-color: rgba(255,255,255,0.9);
-    padding: 15px;
-    border-radius: 5px;
-    z-index: 10;
+  /* Spin Animation */
+  @keyframes spinAnimation {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .spin {
+    animation: spinAnimation 500ms forwards;
   }
   
-  /* Hide element utility class */
-  .hidden {
-    display: none;
+  /* Zoom Animation */
+  @keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .zoom {
+    animation: zoomIn 500ms forwards;
+  }
+  
+  /* Wipe Animation */
+  @keyframes wipeIn {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+  .wipe {
+    animation: wipeIn 500ms forwards;
   }
   

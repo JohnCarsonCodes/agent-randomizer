@@ -1,167 +1,163 @@
-/**
- * Script for the Agent Randomizer streaming overlay.
- * This script handles DOM initialization, fetching images from GitHub,
- * and the randomization logic.
- *
- * Ensure that the repository is public (or properly authenticated) so that
- * the GitHub API can list folder contents.
- */
-
-/* ======================= Configuration Constants ======================= */
-
-// Replace these constants with your actual GitHub username and repository name.
-const REPO_OWNER = "JohnCarsonCodes"; // Your GitHub username.
-const REPO_NAME = "agent-randomizer"; // Repository name.
-
-/* ======================= Utility Functions ======================= */
+// Global fieldData variable that will hold the configuration values.
+let fieldData = {};
 
 /**
- * Fetches image file URLs from a specified game folder in the GitHub repository.
- * @param {string} gameName - The selected game name (corresponds to a folder name in assets).
- * @returns {Promise<Array<string>>} - Promise resolving to an array of full image URLs.
+ * Fetches image URLs from a specified game folder in your GitHub repository.
+ * @param {string} gameName - The selected game name (folder in assets).
+ * @returns {Promise<Array<string>>} - Resolves to an array of image URLs.
  */
 function fetchGameImages(gameName) {
-  // Construct the folder path. Assumes folder names in the repository are lowercase.
   const folderPath = `assets/${gameName.trim().toLowerCase()}`;
-  // Build the GitHub API URL to list the contents of the folder.
-  const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${folderPath}`;
-
+  const apiUrl = `https://api.github.com/repos/JohnCarsonCodes/agent-randomizer/contents/${folderPath}`;
   return fetch(apiUrl)
-    .then((response) => {
+    .then(response => {
       if (!response.ok) {
-        throw new Error(
-          `GitHub API request failed: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`GitHub API request failed: ${response.status} ${response.statusText}`);
       }
       return response.json();
     })
-    .then((data) => {
-      // Define common image file extensions.
-      const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".svg"];
-      // Filter and return only those files with matching extensions.
+    .then(data => {
+      const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg'];
       return data
-        .filter((item) =>
-          imageExtensions.some((ext) => item.name.toLowerCase().endsWith(ext))
-        )
-        .map((item) => item.download_url);
+        .filter(item => imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext)))
+        .map(item => item.download_url);
     })
-    .catch((error) => {
-      console.error("Error fetching game images:", error);
+    .catch(error => {
+      console.error('Error fetching game images:', error);
       return [];
     });
 }
 
 /**
- * Randomly shuffles through an array of image URLs with animation,
- * then stops on the final selected image.
- * @param {Array<string>} images - Array of image URLs to shuffle through.
- * @param {number} duration - Total duration for randomization (in seconds).
- * @param {string} animationType - Animation type ("fade" or "slide").
+ * Randomly shuffles through an array of image URLs and updates the image element.
+ * @param {Array<string>} images - Array of image URLs.
+ * @param {number} duration - Duration of randomization (in seconds).
+ * @param {number} intervalTime - Milliseconds between each update.
+ * @param {string} animationType - Animation type ("flip", "spin", "fade", "slide", "zoom", or "wipe").
+ * @param {boolean} enableAnimation - Whether animations are enabled.
  */
-function randomizeSelection(images, duration, animationType) {
+function randomizeSelection(images, duration, intervalTime, animationType, enableAnimation) {
   const imageElement = document.getElementById("randomizer-image");
-  const totalTime = duration * 1000; // Convert duration to milliseconds.
-  const shuffleInterval = 100; // Change image every 100 ms.
+  const totalTime = duration * 1000; // Convert seconds to milliseconds
   let elapsed = 0;
-
-  // Remove any previous animation classes.
-  imageElement.classList.remove("fade-in", "slide-in");
-
-  // Start shuffling images at regular intervals.
+  
   const intervalId = setInterval(() => {
     const randomImage = images[Math.floor(Math.random() * images.length)];
+    console.log("Updating image to:", randomImage);
     imageElement.src = randomImage;
-
-    // Restart the animation by forcing a reflow.
-    imageElement.classList.remove(
-      animationType === "fade" ? "fade-in" : "slide-in"
-    );
-    void imageElement.offsetWidth; // Force reflow.
-    imageElement.classList.add(
-      animationType === "fade" ? "fade-in" : "slide-in"
-    );
-
-    elapsed += shuffleInterval;
+    
+    if (enableAnimation) {
+      // Remove previous animation classes.
+      imageElement.classList.remove("flip", "spin", "fade-in", "slide-in", "zoom", "wipe");
+      // Force a reflow so that the animation restarts.
+      void imageElement.offsetWidth;
+      // Set the animation duration dynamically based on intervalTime.
+      imageElement.style.animationDuration = intervalTime + "ms";
+      // Apply the selected animation class.
+      switch (animationType) {
+        case "flip":
+          imageElement.classList.add("flip");
+          break;
+        case "spin":
+          imageElement.classList.add("spin");
+          break;
+        case "fade":
+          imageElement.classList.add("fade-in");
+          break;
+        case "slide":
+          imageElement.classList.add("slide-in");
+          break;
+        case "zoom":
+          imageElement.classList.add("zoom");
+          break;
+        case "wipe":
+          imageElement.classList.add("wipe");
+          break;
+        default:
+          break;
+      }
+    }
+    
+    elapsed += intervalTime;
     if (elapsed >= totalTime) {
       clearInterval(intervalId);
-      // The final image remains visible.
+      console.log("Randomization complete.");
     }
-  }, shuffleInterval);
+  }, intervalTime);
 }
-
-/* ======================= DOM Initialization ======================= */
 
 /**
- * Sets up all DOM event listeners. This function is called after the DOM content is loaded.
+ * Main function to initiate the randomization process.
+ * Makes the overlay visible, starts randomization, then fades out the overlay.
  */
-function setupDOMListeners() {
-  // Toggle the configuration panel's visibility.
-  const toggleConfig = document.getElementById("toggle-config");
-  if (toggleConfig) {
-    toggleConfig.addEventListener("click", () => {
-      const configPanel = document.getElementById("config-panel");
-      configPanel.classList.toggle("hidden");
-    });
-  }
-
-  // Show or hide the custom images input field based on the game selection.
-  const gameSelect = document.getElementById("game-select");
-  if (gameSelect) {
-    gameSelect.addEventListener("change", (event) => {
-      const customSection = document.getElementById("custom-images-section");
-      // Display custom image input only when "custom" is selected.
-      customSection.classList.toggle("hidden", event.target.value !== "custom");
-    });
-  }
-
-  // Apply the user-selected settings and initiate the randomization process.
-  const applySettings = document.getElementById("apply-settings");
-  if (applySettings) {
-    applySettings.addEventListener("click", () => {
-      const selectedGame = document.getElementById("game-select").value;
-      const duration = parseInt(document.getElementById("duration").value, 10);
-      const animationType = document.getElementById("animation").value;
-
-      if (selectedGame === "custom") {
-        // Use the manually entered image URLs.
-        const customImagesInput =
-          document.getElementById("custom-images").value;
-        const customImages = customImagesInput
-          .split(",")
-          .map((url) => url.trim())
-          .filter((url) => url);
-        if (customImages.length > 0) {
-          randomizeSelection(customImages, duration, animationType);
+function startRandomization() {
+  // Get the container element using its class "main-container".
+  const container = document.querySelector(".main-container");
+  
+  // Fade in: make the container visible.
+  container.style.visibility = "visible";
+  container.style.opacity = 1;
+  
+  // Retrieve settings from fieldData.
+  const gameSelection = fieldData.game || "valorant";
+  const animationDuration = parseInt(fieldData.duration || "6", 10); // Animation duration (in seconds)
+  const intervalTime = parseInt(fieldData.interval || "250", 10);     // Milliseconds between updates
+  const overlayLength = parseInt(fieldData.length || "10", 10);       // Total seconds the overlay stays active
+  // const customImages = fieldData.customImages || [];
+  const animationEnabled = (fieldData.animation && fieldData.animation.toLowerCase() === "yes");
+  const animationType = fieldData.animationType || "flip";
+  
+  // Start the randomization process.
+  if (gameSelection === "custom" && customImages.length > 0) {
+    randomizeSelection(customImages, animationDuration, intervalTime, animationType, animationEnabled);
+  } else {
+    fetchGameImages(gameSelection)
+      .then(images => {
+        console.log("Fetched images:", images);
+        if (images.length > 0) {
+          randomizeSelection(images, animationDuration, intervalTime, animationType, animationEnabled);
         } else {
-          console.error("No custom images provided.");
+          console.error("No images found for the selected game.");
         }
-      } else {
-        // Dynamically fetch images from the selected game folder on GitHub.
-        fetchGameImages(selectedGame).then((images) => {
-          // Debug: Output the array of images to the debug element.
-          const debugOutput = document.getElementById("debug-output");
-          if (debugOutput) {
-            debugOutput.textContent = JSON.stringify(images, null, 2);
-          }
-
-          if (images.length > 0) {
-            randomizeSelection(images, duration, animationType);
-          } else {
-            console.error("No images found for the selected game.");
-          }
-        });
-      }
-    });
+      });
   }
+  
+  // After the overlay stays active for 'overlayLength' seconds, fade it out.
+  setTimeout(() => {
+    container.style.opacity = 0;
+    // After the 400ms transition (matches container CSS), hide the container.
+    setTimeout(() => {
+      container.style.visibility = "hidden";
+    }, 400);
+  }, overlayLength * 1000);
 }
 
-// Initialize DOM listeners when the document is ready.
-if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", setupDOMListeners);
-}
+/* --------------------------
+   Event Listeners for Streamelements
+   -------------------------- */
 
-module.exports = {
-  fetchGameImages,
-  randomizeSelection,
-  setupDOMListeners,
-};
+/**
+ * onWidgetLoad event: Called when the widget loads.
+ * Stores the field data from the widget's configuration.
+ */
+window.addEventListener('onWidgetLoad', function(obj) {
+  fieldData = obj.detail.fieldData;
+  console.log("Widget loaded. Field data:", fieldData);
+});
+
+/**
+ * onEventReceived event: Called when an event (like a chat message) is received.
+ * Checks if the message text matches our randomize command.
+ */
+window.addEventListener('onEventReceived', function(obj) {
+  if (obj.detail.listener === "message" && obj.detail.event && obj.detail.event.data) {
+    const data = obj.detail.event.data;
+    const receivedCommand = data.text.trim().toLowerCase();
+    const expectedCommand = (fieldData.randomizeCommand || "!agent").toLowerCase();
+    console.log("Received command:", receivedCommand, "| Expected command:", expectedCommand);
+    if (receivedCommand === expectedCommand) {
+      console.log("Command matched, starting randomization.");
+      startRandomization();
+    }
+  }
+});

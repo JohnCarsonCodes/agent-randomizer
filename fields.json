@@ -1,0 +1,56 @@
+{
+    "randomizeCommand": {
+      "type": "text",
+      "label": "Randomizer Command",
+      "value": "!agent"
+    },
+    "game": {
+      "type": "dropdown",
+      "label": "Select Game:",
+      "value": "valorant",
+      "options": {
+        "valorant": "Valorant",
+        "marvel-rivals": "Marvel Rivals"
+      }
+    },
+    "duration": {
+      "type": "number",
+      "label": "Animation Duration in Seconds:",
+      "value": 6,
+      "max": 10
+    },
+    "length": {
+      "type": "number",
+      "label": "Total Duration in Seconds:",
+      "value": 10,
+      "max": 20
+    },
+    "interval": {
+      "type": "number",
+      "label": "Milliseconds Between Shuffle:",
+      "value": 250,
+      "min": 50
+    },
+    "animation": {
+      "type": "dropdown",
+      "label": "Enable Animation:",
+      "value": "yes",
+      "options": {
+        "yes": "Yes",
+        "no": "No"
+      }
+    },
+    "animationType": {
+      "type": "dropdown",
+      "label": "Animation Type:",
+      "value": "flip",
+      "options": {
+        "fade": "Default",
+        "flip": "Flip",
+        "spin": "Spin",
+        "slide": "Slide",
+        "zoom": "Zoom",
+        "wipe": "Wipe"
+      }
+    }
+  }
